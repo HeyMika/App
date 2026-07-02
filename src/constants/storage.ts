@@ -6,6 +6,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const storage = createMMKV()
 
+/**
+ * Dedicated MMKV instance for the selected client-certificate alias.
+ *
+ * Kept separate from {@link storage} so it is NOT wiped by `storage.clearAll()` on
+ * sign-out — a client certificate is a device/server-level setting, so re-logging in
+ * to the same mutual-TLS server keeps working. The alias itself is not sensitive; the
+ * private key stays in the Android system KeyChain.
+ */
+export const clientCertificateStorage = createMMKV({ id: 'client-certificate' })
+
 const storageFunctions = {
 	setItem: async (key: string, value: string) => {
 		await AsyncStorage.setItem(key, value)
