@@ -50,7 +50,7 @@ class ClientCertModule(private val reactContext: ReactApplicationContext) :
 	 */
 	@ReactMethod
 	fun selectCertificate(host: String?, port: Double, promise: Promise) {
-		val activity: Activity? = currentActivity
+		val activity: Activity? = reactApplicationContext.currentActivity
 
 		if (activity == null) {
 			promise.reject(
