@@ -7,6 +7,8 @@ import axios, {
 	InternalAxiosRequestConfig,
 } from 'axios'
 import { nitroFetchOnWorklet } from 'react-native-nitro-fetch'
+import { clientCertificateStorage } from '../constants/storage'
+import { MMKVStorageKeys } from '../enums/mmkv-storage-keys'
 
 const NETWORK_TIMEOUT = 30000
 
@@ -177,9 +179,36 @@ function buildFullURL(config: InternalAxiosRequestConfig): string {
 	return url
 }
 
+const hasClientCertificate = (): boolean =>
+	!!clientCertificateStorage.getString(MMKVStorageKeys.ClientCertificateAlias)
+
+/**
+ * Lazily resolves axios's built-in React Native adapter (XHR), which is backed by React
+ * Native's own networking module → OkHttp. When a client certificate is configured we
+ * route through it because OkHttp can present the certificate during the TLS handshake
+ * (see `ClientCertOkHttpFactory` on the native side). The default Cronet-based
+ * nitro-fetch stack has no client-certificate API, so it cannot be used for mutual TLS.
+ *
+ * Resolved lazily (not at module load) so environments without `XMLHttpRequest` — e.g.
+ * Jest — don't throw; it's only ever needed on device when a certificate is set.
+ */
+let cachedXhrAdapter: AxiosAdapter | undefined
+const getXhrAdapter = (): AxiosAdapter => {
+	if (!cachedXhrAdapter) cachedXhrAdapter = axios.getAdapter('xhr')
+	return cachedXhrAdapter
+}
+
+/**
+ * Chooses the transport per request: the cert-capable OkHttp path when a client
+ * certificate is configured, otherwise the fast Cronet path (unchanged behaviour for
+ * everyone not using mutual TLS).
+ */
+const dispatchingAdapter: AxiosAdapter = (config) =>
+	hasClientCertificate() ? getXhrAdapter()(config) : nitroAxiosAdapter(config)
+
 const AXIOS_INSTANCE = axios.create({
 	timeout: NETWORK_TIMEOUT,
-	adapter: nitroAxiosAdapter,
+	adapter: dispatchingAdapter,
 })
 
 export default AXIOS_INSTANCE

@@ -12,6 +12,7 @@ import PrivacyDeveloperScreen from './privacy-developer'
 import PlaybackScreen from './playback'
 import GesturesScreen from './gestures'
 import AppearanceScreen from './appearance'
+import ClientCertificateScreen from './client-certificate'
 
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>({
 	initialRouteName: 'Settings',
@@ -109,6 +110,17 @@ const SettingsStack = createNativeStackNavigator<SettingsStackParamList>({
 			screen: PrivacyDeveloperScreen,
 			options: {
 				title: 'Privacy & Developer',
+				headerShown: true,
+				headerTitleAlign: 'center',
+				headerTitleStyle: {
+					fontFamily: 'Figtree-Bold',
+				},
+			},
+		},
+		ClientCertificate: {
+			screen: ClientCertificateScreen,
+			options: {
+				title: 'Client Certificate',
 				headerShown: true,
 				headerTitleAlign: 'center',
 				headerTitleStyle: {

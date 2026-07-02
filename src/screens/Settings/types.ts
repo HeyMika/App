@@ -12,6 +12,7 @@ export type SettingsStackParamList = {
 	Gestures: undefined
 	Playback: undefined
 	PrivacyDeveloper: undefined
+	ClientCertificate: undefined
 	About: undefined
 }
 

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Platform } from 'react-native'
 import { ScrollView, YStack, XStack, SizableText, Avatar, Card, Paragraph } from 'tamagui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
@@ -108,6 +109,15 @@ export default function VerticalSettings(): React.JSX.Element {
 					route='PrivacyDeveloper'
 					iconColor='$success'
 				/>
+				{Platform.OS === 'android' && (
+					<SettingsNavRow
+						testID='settings-nav-client-certificate'
+						title='Client Certificate'
+						icon='certificate'
+						route='ClientCertificate'
+						iconColor='$warning'
+					/>
+				)}
 				<SettingsNavRow
 					testID='settings-nav-about'
 					title='About'

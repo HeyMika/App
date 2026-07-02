@@ -27,6 +27,7 @@ module.exports = {
 		'./jest/setup/rnfs.ts',
 		'./src/configs/styling/tamagui.ts',
 		'./jest/setup/native-modules.ts',
+		'./jest/setup/client-cert.ts',
 	],
 	extensionsToTreatAsEsm: ['.ts', '.tsx'],
 	transformIgnorePatterns: [
