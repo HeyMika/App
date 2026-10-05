@@ -10,8 +10,9 @@ import { groupBy, isEmpty, isEqual, isUndefined } from 'lodash'
 import { SectionList } from 'react-native'
 import { Api } from '@jellyfin/sdk/lib/api'
 import { JellifyLibrary } from '../../types/JellifyLibrary'
-import QueryConfig from '../../configs/query.config'
+import QueryConfig from '../../configs/querying/index.config'
 import { JellifyUser } from '../../types/JellifyUser'
+import { setQueryUserDataForItems } from './user-data'
 
 /**
  * Fetches a single Jellyfin item by it's ID
@@ -134,6 +135,7 @@ export async function fetchAlbumDiscs(
 					parentId: album.Id!,
 					sortBy: sortBy,
 					fields: [ItemFields.SortName],
+					enableUserData: true,
 				},
 				{
 					signal,
@@ -158,6 +160,7 @@ export async function fetchAlbumDiscs(
 						)
 					: [{ title: '1', data: [] }]
 
+				setQueryUserDataForItems(data.Items ?? [])
 				resolve(discs)
 			})
 			.catch((error) => {

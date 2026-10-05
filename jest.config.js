@@ -1,6 +1,7 @@
 // https://docs.swmansion.com/react-native-gesture-handler/docs/guides/testing
 module.exports = {
 	preset: '@react-native/jest-preset',
+	resolver: '<rootDir>/jest/resolvers/reanimated.js',
 	testTimeout: 10000,
 
 	// Performance optimizations for CI
@@ -10,12 +11,10 @@ module.exports = {
 	setupFiles: ['./node_modules/react-native-gesture-handler/jestSetup.js'],
 	setupFilesAfterEnv: [
 		'./jest/setup/setup.ts',
-		'./jest/setup/async-storage.ts',
 		'./jest/setup/blur.ts',
 		'./jest/setup/carplay.ts',
 		'./jest/setup/clipboard.ts',
 		'./jest/setup/device-info.js', // JS to prevent Typescript implicit any warning
-		'./jest/setup/google-cast.ts',
 		'./jest/setup/worklets.ts', // Must be before Reanimated
 		'./jest/setup/reanimated.ts',
 		'./jest/setup/sentry.ts',
