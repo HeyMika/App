@@ -11,7 +11,8 @@ concurrency:
 
 jobs:
   run-jest-test-suite:
-    runs-on: [self-hosted, Linux]
+    # HeyMika fork: no self-hosted runners here, so always use GitHub's.
+    runs-on: ubuntu-latest
     steps:
       - name: 🛒 Checkout
         uses: actions/checkout@v6
