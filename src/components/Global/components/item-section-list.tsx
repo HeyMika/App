@@ -23,11 +23,14 @@ export default function ItemSectionList({
 }: ItemSectionListProps) {
 	const theme = useTheme()
 
+	const onRefresh = () => {
+		query.refetch()
+	}
+
 	return (
 		<XStack flex={1}>
 			<SectionList
 				ref={ref}
-				contentInsetAdjustmentBehavior='automatic'
 				sections={query.data ?? []}
 				renderSectionHeader={({ section }) => (
 					<ListStickyHeader text={section.title.toUpperCase()} />
@@ -37,7 +40,7 @@ export default function ItemSectionList({
 				refreshControl={
 					<RefreshControl
 						refreshing={query.isFetching}
-						onRefresh={query.refetch}
+						onRefresh={onRefresh}
 						tintColor={theme.primary.val}
 					/>
 				}
@@ -51,7 +54,7 @@ export default function ItemSectionList({
 				ListEmptyComponent={
 					<YStack flex={1} justify='center' alignItems='center'>
 						<Paragraph marginVertical='auto' color={'$borderColor'}>
-							No tracks
+							No items
 						</Paragraph>
 					</YStack>
 				}

@@ -2,7 +2,6 @@ import { createMMKV } from 'react-native-mmkv'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { AsyncStorage as TanstackAsyncStorage } from '@tanstack/react-query-persist-client'
 import { StateStorage } from 'zustand/middleware'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const storage = createMMKV()
 
@@ -15,19 +14,6 @@ export const storage = createMMKV()
  * private key stays in the Android system KeyChain.
  */
 export const clientCertificateStorage = createMMKV({ id: 'client-certificate' })
-
-const storageFunctions = {
-	setItem: async (key: string, value: string) => {
-		await AsyncStorage.setItem(key, value)
-	},
-	getItem: async (key: string) => {
-		const value = await AsyncStorage.getItem(key)
-		return value === undefined ? null : value
-	},
-	removeItem: async (key: string) => {
-		await AsyncStorage.removeItem(key)
-	},
-}
 
 const mmkvStorageFunctions = {
 	setItem: (key: string, value: string) => {
@@ -42,12 +28,12 @@ const mmkvStorageFunctions = {
 	},
 }
 
-const clientStorage: TanstackAsyncStorage<string> = storageFunctions
+const clientStorage: TanstackAsyncStorage<string> = mmkvStorageFunctions
 
 export const queryClientPersister = createAsyncStoragePersister({
 	storage: clientStorage,
 })
 
-export const stateStorage: StateStorage = storageFunctions
+export const stateStorage: StateStorage = mmkvStorageFunctions
 
 export const mmkvStateStorage: StateStorage = mmkvStorageFunctions

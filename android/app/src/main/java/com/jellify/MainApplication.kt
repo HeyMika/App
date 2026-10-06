@@ -13,7 +13,6 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.jellify.clientcert.ClientCertOkHttpFactory
 import com.jellify.clientcert.ClientCertPackage
-import com.margelo.nitro.nitroota.core.getStoredBundlePath
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 
 
@@ -30,7 +29,8 @@ class MainApplication : Application(), ReactApplication {
           // add(MyReactNativePackage())
           add(ClientCertPackage())
         },
-        jsBundleFilePath = getStoredBundlePath(applicationContext)
+        // OTA bundles are deliberately not loaded in this fork: they come from upstream's
+        // Jellify-Music/App-Bundles and would replace this fork's JS (e.g. client certificates).
     )
   }
   

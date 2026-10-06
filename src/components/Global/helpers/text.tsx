@@ -19,7 +19,7 @@ interface LabelProps {
 
 export function Label(props: LabelProps): React.JSX.Element {
 	return (
-		<TamaguiLabel fontWeight={600} htmlFor={props.htmlFor} justifyContent='flex-end'>
+		<TamaguiLabel fontWeight={'$6'} htmlFor={props.htmlFor} justifyContent='flex-end'>
 			{props.children}
 		</TamaguiLabel>
 	)
@@ -74,7 +74,6 @@ export function Text(props: TextProps): React.JSX.Element {
 			fontWeight={props.bold ? '$6' : '$4'}
 			fontSize='$4'
 			lineHeight={'$1'}
-			lineBreakMode='clip'
 			userSelect='none'
 			textShadowColor={props.textOutline === 'strong' ? 'rgba(0, 0, 0, 0.9)' : 'transparent'}
 			textShadowOffset={

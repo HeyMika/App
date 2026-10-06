@@ -54,37 +54,43 @@ export function Album({ album }: { album: BaseItemDto }): React.JSX.Element {
 
 	const handleDownload = () => downloadTracks.mutate(albumTrackList ?? [])
 
+	const onRefresh = async () => {
+		await refetch()
+	}
+
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerRight: () => (
 				<XStack gap={'$2'} justifyContent='center' alignContent='center'>
 					{albumTrackList &&
 						(isDownloaded ? (
-							<Animated.View
-								entering={FadeIn.easing(Easing.in(Easing.ease))}
-								exiting={FadeOut.easing(Easing.out(Easing.ease))}
-								layout={LinearTransition.springify()}
-							>
-								<Icon
-									color='$warning'
-									name='broom'
-									onPress={handleDeleteDownload}
-								/>
-							</Animated.View>
+							<Icon
+								color='$warning'
+								name='broom'
+								onPress={handleDeleteDownload}
+								transition={'quick'}
+								enterStyle={{
+									opacity: 0,
+								}}
+								exitStyle={{
+									opacity: 0,
+								}}
+							/>
 						) : downloadTracks.isPending ? (
 							<Spinner justifyContent='center' color={'$neutral'} />
 						) : (
-							<Animated.View
-								entering={FadeIn.easing(Easing.in(Easing.ease))}
-								exiting={FadeOut.easing(Easing.out(Easing.ease))}
-								layout={LinearTransition.springify()}
-							>
-								<Icon
-									color='$success'
-									name='download-circle-outline'
-									onPress={handleDownload}
-								/>
-							</Animated.View>
+							<Icon
+								color='$success'
+								name='download-circle-outline'
+								onPress={handleDownload}
+								transition={'quick'}
+								enterStyle={{
+									opacity: 0,
+								}}
+								exitStyle={{
+									opacity: 0,
+								}}
+							/>
 						))}
 					<FavoriteButton item={album} />
 				</XStack>
@@ -120,7 +126,7 @@ export function Album({ album }: { album: BaseItemDto }): React.JSX.Element {
 					</XStack>
 				) : null
 			}}
-			ListHeaderComponent={() => <AlbumTrackListHeader album={album} />}
+			ListHeaderComponent={<AlbumTrackListHeader album={album} />}
 			renderItem={({ item: track, index }) => {
 				const trackIndexInAlbum =
 					albumTrackList?.findIndex(({ Id }) => Id === track.Id) ?? index
@@ -136,17 +142,21 @@ export function Album({ album }: { album: BaseItemDto }): React.JSX.Element {
 					/>
 				)
 			}}
-			ListFooterComponent={() => <AlbumTrackListFooter album={album} freeze={isPending} />}
+			ListFooterComponent={<AlbumTrackListFooter album={album} freeze={isPending} />}
 			ListEmptyComponent={() => (
 				<YStack flex={1} alignContent='center' margin={'$4'}>
-					{isPending ? null : <Text color={'$borderColor'}>No album tracks</Text>}
+					{isPending ? null : (
+						<Text textAlign='center' color='$borderColor'>
+							No album tracks
+						</Text>
+					)}
 				</YStack>
 			)}
 			onScrollBeginDrag={closeAllSwipeableRows}
 			refreshControl={
 				<RefreshControl
 					refreshing={isPending}
-					onRefresh={refetch}
+					onRefresh={onRefresh}
 					tintColor={theme.primary.val}
 				/>
 			}

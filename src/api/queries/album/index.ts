@@ -5,7 +5,7 @@ import { SortOrder } from '@jellyfin/sdk/lib/generated-client/models/sort-order'
 import { fetchAlbums } from './utils/album'
 import { BaseItemDto } from '@jellyfin/sdk/lib/generated-client'
 import flattenInfiniteQueryPages from '../../../utils/query-selectors'
-import { ApiLimits, MaxPages } from '../../../configs/query.config'
+import { ApiLimits, MaxPages } from '../../../configs/querying/index.config'
 import { queryClient } from '../../../constants/query-client'
 import { getApi, getUser } from '../../../stores/auth/utils'
 import { useJellifyLibrary } from '../../../stores/auth'
@@ -122,5 +122,5 @@ export const ensureAlbumDiscsQuery = async (album: BaseItemDto) =>
 
 const AlbumDiscsQuery = (api: Api | undefined, album: BaseItemDto) => ({
 	queryKey: AlbumDiscsQueryKey(album),
-	queryFn: ({ signal }: { signal: AbortSignal }) => fetchAlbumDiscs(api, album, signal),
+	queryFn: () => fetchAlbumDiscs(api, album),
 })

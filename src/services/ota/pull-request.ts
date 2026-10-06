@@ -1,14 +1,19 @@
 import { applyHapticFeedback } from '../../utils/haptics'
-import OTA_GITHUB_URL from '../../configs/ota.config'
+import OTA_GITHUB_URL, { OTA_UPDATE_ENABLED } from '../../configs/ota.config'
 import { Platform, Alert } from 'react-native'
 
 import { githubOTA, OTAUpdateManager, reloadApp } from 'react-native-nitro-ota'
 
 export const downloadPRUpdate = (prNumber: number) => {
+	if (!OTA_UPDATE_ENABLED) {
+		Alert.alert('Pull request builds are disabled in this build')
+		return
+	}
+
 	const gitBranch = `PULL_REQUEST_${prNumber}_${Platform.OS}`
 	const { downloadUrl, versionUrl } = githubOTA({
 		githubUrl: OTA_GITHUB_URL,
-		otaVersionPath: 'ota.version', // optional, defaults to 'ota.version'
+		otaVersionPath: 'ota.version.json', // JSON manifest, lists differential patches
 		ref: gitBranch, // optional, defaults to 'main'
 	})
 	const otaManager = new OTAUpdateManager(downloadUrl, versionUrl)

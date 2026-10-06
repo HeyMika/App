@@ -12,7 +12,7 @@ import { captureError, LoggingContext } from '../../utils/logging'
 
 /**
  * Reads the selected client-certificate alias straight from MMKV. Synchronous, so the
- * axios adapter (`src/configs/axios.config.ts`) can decide per request whether to route
+ * axios adapter (`src/configs/networking/axios.config.ts`) can decide per request whether to route
  * through the client-cert (OkHttp) path. Returns `null` when none is configured.
  *
  * MMKV mirrors the native SharedPreferences value (the source of truth used by the

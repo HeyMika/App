@@ -1,12 +1,13 @@
-import { OTA_DOWNLOAD_URL, OTA_VERSION_URL } from '../../configs/ota.config'
+import { OTA_DOWNLOAD_URL, OTA_UPDATE_ENABLED, OTA_VERSION_URL } from '../../configs/ota.config'
 import { Alert } from 'react-native'
 import { OTAUpdateManager, reloadApp } from 'react-native-nitro-ota'
 
 const otaManager = new OTAUpdateManager(OTA_DOWNLOAD_URL, OTA_VERSION_URL)
 
 export const checkGitVersion = () => {
+	// JS-side check: understands the JSON manifest on every native version and honours the blacklist
 	otaManager
-		.checkForUpdates()
+		.hasCompatibleUpdate()
 		.then((update) => {
 			if (update) {
 				downloadUpdate()
@@ -18,9 +19,12 @@ export const checkGitVersion = () => {
 }
 
 export const downloadUpdate = (showCatchAlert: boolean = false) => {
+	if (!OTA_UPDATE_ENABLED) return
+
 	otaManager
 		.downloadUpdate()
 		.then(() => {
+			console.log('OTA download:', otaManager.lastDownload)
 			Alert.alert('Jellify has been updated!', 'Restart to apply the changes', [
 				{ text: 'OK', onPress: () => reloadApp() },
 				{ text: 'Cancel', style: 'cancel' },

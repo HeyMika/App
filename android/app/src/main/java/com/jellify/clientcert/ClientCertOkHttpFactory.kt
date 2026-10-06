@@ -17,7 +17,7 @@ import okhttp3.OkHttpClient
  *
  * This is what makes mutual-TLS (client certificate) authentication possible: the
  * app's primary REST traffic is routed through this OkHttp stack whenever a client
- * certificate is configured (see `src/configs/axios.config.ts`), because the default
+ * certificate is configured (see `src/configs/networking/axios.config.ts`), because the default
  * Cronet stack (`react-native-nitro-fetch`) has no client-certificate API.
  *
  * Server trust is deliberately left untouched — the platform default trust managers

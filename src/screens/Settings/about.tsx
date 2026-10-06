@@ -10,6 +10,7 @@ import { useInfoCaption } from '../../hooks/use-caption'
 import { version } from '../../../package.json'
 import { getStoredOtaVersion } from 'react-native-nitro-ota'
 import { downloadUpdate } from '../../services/ota'
+import { OTA_UPDATE_ENABLED } from '../../configs/ota.config'
 import { ICON_PRESS_STYLES } from '../../configs/styling/elements'
 import { SPECIAL_THANKS } from '../../configs/messaging/special-thanks'
 
@@ -96,15 +97,17 @@ export default function AboutScreen(): React.JSX.Element {
 							<Icon name='code-tags' small color='$borderColor' />
 							<Text>View Source</Text>
 						</XStack>
-						<XStack
-							alignItems='center'
-							gap='$1'
-							onPress={() => downloadUpdate(true)}
-							{...ICON_PRESS_STYLES}
-						>
-							<Icon name='cellphone-arrow-down' small color='$success' />
-							<Text>Update</Text>
-						</XStack>
+						{OTA_UPDATE_ENABLED && (
+							<XStack
+								alignItems='center'
+								gap='$1'
+								onPress={() => downloadUpdate(true)}
+								{...ICON_PRESS_STYLES}
+							>
+								<Icon name='cellphone-arrow-down' small color='$success' />
+								<Text>Update</Text>
+							</XStack>
+						)}
 					</XStack>
 
 					<YStack gap='$2'>

@@ -4,16 +4,14 @@ import Icon from '../../Global/components/icon'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation } from '@react-navigation/native'
 import { PlayerParamList } from '../../../screens/Player/types'
-import { useIsCasting } from '../../../stores/player/engine'
 import useRawLyrics from '../../../api/queries/lyrics'
-import Animated, { Easing, FadeIn, FadeOut } from 'react-native-reanimated'
 import { ICON_PRESS_STYLES } from '../../../configs/styling/elements'
-import CastContext, { CastButton } from 'react-native-google-cast'
+import { CastButton, CastState } from 'react-native-nitro-player'
 import { usePlayerContext } from '../../../providers/Player'
+import { StyleSheet } from 'react-native'
 
 export default function Footer(): React.JSX.Element {
 	const navigation = useNavigation<NativeStackNavigationProp<PlayerParamList>>()
-	const isCasting = useIsCasting()
 
 	const { setPage } = usePlayerContext()
 
@@ -21,41 +19,8 @@ export default function Footer(): React.JSX.Element {
 
 	const { data: lyrics } = useRawLyrics()
 
-	const castIconName = isCasting ? 'cast-connected' : 'cast'
-
-	const castIconColor = isCasting ? '$primary' : '$color'
-
-	const onCastIconPress = () => {
-		console.debug('Cast icon pressed')
-		CastContext.showIntroductoryOverlay()
-			.then(() => {
-				console.debug('navigating to cast dialog')
-				navigation.navigate('CastDialog')
-			})
-			.catch((error) => {
-				console.debug(error)
-			})
-	}
-
-	const castButtonStyle = {
-		width: 24,
-		height: 24,
-		tintColor: theme.color.val,
-	}
-
 	return (
 		<XStack justifyContent='center' alignItems='center' gap={'$3'}>
-			{/* <Icon
-				small
-				name={castIconName}
-				onPress={onCastIconPress}
-				color={castIconColor}
-				{...ICON_PRESS_STYLES}
-			/> */}
-
-			{/* <YStack alignItems='center' justifyContent='center'>
-				<CastButton style={castButtonStyle} />
-			</YStack> */}
 			<XStack alignItems='center' justifyContent='flex-start' flex={1}>
 				<Icon
 					small
@@ -69,18 +34,51 @@ export default function Footer(): React.JSX.Element {
 			<Spacer flex={1} />
 
 			{lyrics && (
-				<Animated.View
-					entering={FadeIn.easing(Easing.in(Easing.ease))}
-					exiting={FadeOut.easing(Easing.out(Easing.ease))}
-				>
-					<Icon
-						small
-						name='message-text-outline'
-						onPress={() => navigation.navigate('LyricsScreen', { lyrics: lyrics })}
-						{...ICON_PRESS_STYLES}
-					/>
-				</Animated.View>
+				<Icon
+					small
+					name='message-text-outline'
+					onPress={() => navigation.navigate('LyricsScreen', { lyrics: lyrics })}
+					{...ICON_PRESS_STYLES}
+					enterStyle={{
+						opacity: 0,
+					}}
+					exitStyle={{
+						opacity: 0,
+					}}
+					transition={'quick'}
+				/>
 			)}
+
+			<YStack alignItems='center' justifyContent='center'>
+				{/* nitro-player Cast button — opens the native device picker and
+				    reflects the live connection state. */}
+				<CastButton
+					style={styles.castButton}
+					size={28}
+					color={theme.color.val}
+					activeColor={theme.primary.val}
+					hideWhenNoDevices={false}
+					renderIcon={CastIcon}
+				/>
+			</YStack>
 		</XStack>
 	)
 }
+
+interface CastIconProps {
+	state: CastState
+	isCasting: boolean
+}
+
+function CastIcon({ isCasting }: CastIconProps) {
+	const color = isCasting ? '$primary' : '$color'
+
+	return <Icon name='cast-audio' small color={color} />
+}
+
+const styles = StyleSheet.create({
+	castButton: {
+		flex: 1,
+		paddingHorizontal: 4,
+	},
+})

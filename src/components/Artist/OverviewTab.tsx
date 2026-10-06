@@ -1,9 +1,6 @@
 import React from 'react'
 import { useArtistContext } from '../../providers/Artist'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { BaseStackParamList } from '@/src/screens/types'
 import {
-	DefaultSectionT,
 	RefreshControl,
 	SectionBase,
 	SectionListData,
@@ -21,12 +18,9 @@ import {
 	filterForEPs,
 	filterForSingles,
 	filterForUnknown,
-} from '../../configs/albums.config'
-import { useNavigation } from '@react-navigation/native'
+} from '../../configs/categorizing/albums.config'
 
 export default function ArtistOverviewTab(): React.JSX.Element {
-	const baseStackNavigation = useNavigation<NativeStackNavigationProp<BaseStackParamList>>()
-
 	const { featuredOn, albums, fetchingAlbums, refresh } = useArtistContext()
 
 	const theme = useTheme()
@@ -73,7 +67,7 @@ export default function ArtistOverviewTab(): React.JSX.Element {
 
 	const renderItem = ({
 		item,
-	}: SectionListRenderItemInfo<BaseItemDto, SectionBase<BaseItemDto, DefaultSectionT>>) => {
+	}: SectionListRenderItemInfo<BaseItemDto, SectionBase<BaseItemDto>>) => {
 		return <ItemRow item={item} />
 	}
 
