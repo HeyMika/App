@@ -1,4 +1,4 @@
-import { OTA_DOWNLOAD_URL, OTA_VERSION_URL } from '../../configs/ota.config'
+import { OTA_DOWNLOAD_URL, OTA_UPDATE_ENABLED, OTA_VERSION_URL } from '../../configs/ota.config'
 import { Alert } from 'react-native'
 import { OTAUpdateManager, reloadApp } from 'react-native-nitro-ota'
 
@@ -19,6 +19,8 @@ export const checkGitVersion = () => {
 }
 
 export const downloadUpdate = (showCatchAlert: boolean = false) => {
+	if (!OTA_UPDATE_ENABLED) return
+
 	otaManager
 		.downloadUpdate()
 		.then(() => {
