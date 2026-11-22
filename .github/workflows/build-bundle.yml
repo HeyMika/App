@@ -8,9 +8,10 @@ concurrency:
 
 jobs:
   build-bundle:
-    # Fork PRs go to GitHub's runners, never Jellify's own hardware. A
+    # Fork PRs, and any run outside Jellify-Music/App (e.g. a fork's own
+    # repo, which has no self-hosted runners), go to GitHub's runners. A
     # missing head repo (deleted fork) counts as a fork.
-    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux"]') }}
+    runs-on: ${{ (github.repository != 'Jellify-Music/App' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)) && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux"]') }}
 
     steps:
       - name: 🧾 Checkout repository
