@@ -3,25 +3,29 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons'
 import SearchStack from '../Search'
 import TabBar from './tab-bar'
-import { Platform } from 'react-native'
 import SettingsStack from '../Settings'
 import DiscoverStack from '../Discover'
 import LibraryStack from '../Library'
 import HomeStack from '../Home'
+import TabParamList from './types'
+import i18n from '../../i18n'
 
-const Tabs = createBottomTabNavigator({
+const Tabs = createBottomTabNavigator<TabParamList>({
 	initialRouteName: 'HomeTab',
 	screenOptions: {
 		animation: 'shift',
 		lazy: true,
+		tabBarLabelStyle: {
+			fontFamily: 'Figtree-Bold',
+		},
 	},
-	detachInactiveScreens: Platform.OS !== 'ios',
+	detachInactiveScreens: true,
 	tabBar: (props) => <TabBar {...props} />,
 	screens: {
 		HomeTab: {
 			screen: HomeStack,
 			options: {
-				title: 'Home',
+				title: i18n.t('navigation.home'),
 				headerShown: false,
 				tabBarIcon: ({ color, size, focused }) => (
 					<MaterialDesignIcons
@@ -36,7 +40,7 @@ const Tabs = createBottomTabNavigator({
 		LibraryTab: {
 			screen: LibraryStack,
 			options: {
-				title: 'Library',
+				title: i18n.t('navigation.library'),
 				headerShown: false,
 				tabBarIcon: ({ color, size, focused }) => (
 					<MaterialDesignIcons
@@ -51,7 +55,7 @@ const Tabs = createBottomTabNavigator({
 		SearchTab: {
 			screen: SearchStack,
 			options: {
-				title: 'Search',
+				title: i18n.t('navigation.search'),
 				headerShown: false,
 				tabBarIcon: ({ color, size }) => (
 					<MaterialDesignIcons name='magnify' color={color} size={size} />
@@ -62,7 +66,7 @@ const Tabs = createBottomTabNavigator({
 		DiscoverTab: {
 			screen: DiscoverStack,
 			options: {
-				title: 'Discover',
+				title: i18n.t('navigation.discover'),
 				headerShown: false,
 				tabBarIcon: ({ color, size }) => (
 					<MaterialDesignIcons name='radar' color={color} size={size} />
@@ -73,7 +77,7 @@ const Tabs = createBottomTabNavigator({
 		SettingsTab: {
 			screen: SettingsStack,
 			options: {
-				title: 'Settings',
+				title: i18n.t('navigation.settings'),
 				headerShown: false,
 				tabBarIcon: ({ color, size, focused }) => (
 					<MaterialDesignIcons

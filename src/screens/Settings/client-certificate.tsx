@@ -4,10 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import Icon from '../../components/Global/components/icon'
-import Button from '../../components/Global/helpers/button'
+import Button from '../../components/Global/utils/button'
 import SettingsSection from '../../components/Settings/components/settings-section'
 import { useClientCertificate } from '../../stores/settings/client-certificate'
-import { useJellifyServer } from '../../stores/auth'
+import useJellifyStore from '../../stores/auth'
 
 /**
  * Extracts the host/port from the current server URL so the system certificate chooser
@@ -28,13 +28,13 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 	const { bottom } = useSafeAreaInsets()
 
 	const [alias, selectCertificate, clearCertificate, supported] = useClientCertificate()
-	const [server] = useJellifyServer()
+	const serverUrl = useJellifyStore((state) => state.server?.url)
 	const [isBusy, setIsBusy] = useState(false)
 
 	const handleSelect = async () => {
 		setIsBusy(true)
 		try {
-			const { host, port } = parseHostAndPort(server?.url)
+			const { host, port } = parseHostAndPort(serverUrl)
 			const chosen = await selectCertificate(host, port)
 
 			if (chosen) {
@@ -71,7 +71,7 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 				<SettingsSection
 					title='Client Certificate'
 					icon='certificate'
-					iconColor='$primary'
+					iconColor='primary'
 					defaultExpanded
 					collapsible={false}
 				>
@@ -90,7 +90,7 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 								backgroundColor='$backgroundFocus'
 								borderRadius='$3'
 							>
-								<Icon name='information' color='$warning' small />
+								<Icon name='information' color='warning' size='6' />
 								<SizableText size='$3' color='$borderColor' flex={1}>
 									Client certificates are only supported on Android.
 								</SizableText>
@@ -114,8 +114,8 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 									>
 										<Icon
 											name={alias ? 'certificate' : 'certificate-outline'}
-											color='$background'
-											small
+											color='background'
+											size='6'
 										/>
 									</YStack>
 									<YStack flex={1}>
@@ -137,7 +137,7 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 										isBusy ? (
 											<Spinner color='$background' />
 										) : (
-											<Icon name='certificate' color='$background' small />
+											<Icon name='certificate' color='background' size='6' />
 										)
 									}
 								>
@@ -152,7 +152,7 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 										backgroundColor='$danger'
 										disabled={isBusy}
 										onPress={handleRemove}
-										icon={<Icon name='delete' color='$background' small />}
+										icon={<Icon name='delete' color='background' size='6' />}
 									>
 										<Paragraph color='$background' fontWeight='$6'>
 											Remove Certificate
@@ -164,7 +164,7 @@ export default function ClientCertificateScreen(): React.JSX.Element {
 					</YStack>
 				</SettingsSection>
 
-				<SettingsSection title='How it works' icon='information' iconColor='$borderColor'>
+				<SettingsSection title='How it works' icon='information' iconColor='borderColor'>
 					<Paragraph size='$3' color='$borderColor'>
 						Certificates are managed by Android. Install one via Settings → Security →
 						Encryption &amp; credentials → Install a certificate → VPN &amp; app user

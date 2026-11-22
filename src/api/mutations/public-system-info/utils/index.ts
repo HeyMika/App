@@ -1,11 +1,11 @@
-import { getSystemApi } from '@jellyfin/sdk/lib/utils/api'
-
-import { Jellyfin } from '@jellyfin/sdk/lib/jellyfin'
-import { JellyfinInfo } from '../../../info'
-import { PublicSystemInfo } from '@jellyfin/sdk/lib/generated-client/models'
-import { Api } from '@jellyfin/sdk'
 import { AxiosError } from 'axios'
-import HTTPS, { HTTP } from '../../../../constants/protocols'
+import { SystemInfoIssue } from '@jellyfin/sdk/lib/models/recommended-server-issue'
+import type { RecommendedServerInfo } from '@jellyfin/sdk/lib/models/recommended-server-info'
+import { ServerAddressNotAvailableError } from '../../../../types/errors'
+import { JellyfinInfo } from '../../../info'
+import type { ConnectToServerResult } from '../types'
+import i18n from '../../../../i18n'
+import HTTPS from '../../../../constants/protocols'
 import { captureError, captureInfo } from '../../../../utils/logging'
 import LoggingContext from '../../../../utils/logging/enums'
 import {
@@ -13,65 +13,47 @@ import {
 	useClientCertificateStore,
 } from '../../../../stores/settings/client-certificate'
 
-type ConnectionType = 'hostname' | 'ipAddress'
-
 /**
  * Attempts to connect to a Jellyfin server.
  *
+ * Address normalization (protocol, default ports) and candidate ranking is handled by the
+ * Jellyfin SDK. Candidates are ranked with HTTPS first, so HTTP is only used as a fallback.
+ *
+ * If the HTTPS candidates fail in a way that suggests the server requires a client
+ * certificate (mutual TLS), the Android system certificate chooser is presented and
+ * discovery is retried once with the chosen certificate.
+ *
  * @param serverAddress The server address to connect to.
- * @param useHttps Whether to use HTTPS.
- * @returns The public system info response.
+ * @returns The public system info response and the normalized URL of the responding server.
  */
-export async function connectToServer(serverAddress: string): Promise<{
-	publicSystemInfoResponse: PublicSystemInfo
-	connectionType: ConnectionType
-}> {
-	if (!serverAddress) throw new Error('Server address was empty')
+export async function connectToServer(serverAddress: string): Promise<ConnectToServerResult> {
+	if (!serverAddress) throw new ServerAddressNotAvailableError()
 
-	const serverAddressContainsProtocol =
-		serverAddress.includes(HTTP) || serverAddress.includes(HTTPS)
+	let candidates = await JellyfinInfo.discovery.getRecommendedServerCandidates(serverAddress)
+	let best = JellyfinInfo.discovery.findBestServer(candidates)
 
-	const jellyfin = new Jellyfin(JellyfinInfo)
+	// Prefer retrying over HTTPS with a client certificate before settling for an HTTP
+	// fallback (or failing outright).
+	if (!best?.systemInfo?.Version || !best.address.startsWith(HTTPS)) {
+		if (await maybePromptForClientCertificate(candidates)) {
+			candidates = await JellyfinInfo.discovery.getRecommendedServerCandidates(serverAddress)
+			const retried = JellyfinInfo.discovery.findBestServer(candidates)
 
-	// Use the protocol provided in the server address if it exists, otherwise default to HTTPS
-	const hostnameUrl = `${serverAddressContainsProtocol ? '' : HTTPS}${serverAddress}`
-	const hostnameApi = jellyfin.createApi(hostnameUrl)
-
-	const httpApi = !serverAddressContainsProtocol
-		? jellyfin.createApi(`${HTTP}${serverAddress}`)
-		: undefined
-
-	// First attempt to connect using the hostname (with the protocol provided or defaulting to HTTPS)
-	try {
-		return await connect(hostnameApi, 'hostname')
-	} catch (error) {
-		// The server may require a client certificate (mutual TLS). If it looks that
-		// way and the user hasn't configured one yet, present the Android system
-		// certificate chooser and retry once with the chosen certificate.
-		if (await maybePromptForClientCertificate(error, hostnameUrl)) {
-			try {
-				return await connect(hostnameApi, 'hostname')
-			} catch {
+			if (retried?.systemInfo?.Version) best = retried
+			else
 				captureInfo(
 					LoggingContext.ClientCertificate,
 					'Unable to connect after selecting a client certificate',
 				)
-			}
-		} else {
-			console.info('Unable to connect, attempting to connect via HTTP if available')
 		}
 	}
 
-	// If the first attempt fails and we haven't already tried HTTP, attempt to connect using HTTP
-	if (httpApi) {
-		try {
-			return await connect(httpApi, 'ipAddress')
-		} catch (error) {
-			console.info('Unable to connect via HTTP')
-		}
-	}
+	if (!best?.systemInfo?.Version) throw new Error(i18n.t('login.unableToConnect'))
 
-	throw new Error('Unable to connect to Jellyfin')
+	return {
+		publicSystemInfoResponse: best.systemInfo,
+		resolvedUrl: best.address,
+	}
 }
 
 /**
@@ -119,21 +101,40 @@ function parseHostAndPort(url: string): { host: string | null; port: number } {
 }
 
 /**
+ * Finds an HTTPS candidate whose request failed with an error that looks like the
+ * server is asking for a client certificate.
+ */
+function findClientCertificateFailure(candidates: RecommendedServerInfo[]): string | undefined {
+	return candidates.find(
+		(candidate) =>
+			candidate.address.startsWith(HTTPS) &&
+			candidate.issues.some(
+				(issue) =>
+					issue instanceof SystemInfoIssue &&
+					looksLikeClientCertificateError(issue.error),
+			),
+	)?.address
+}
+
+/**
  * When appropriate, presents the Android system certificate chooser for a server that
  * appears to require a client certificate.
  *
  * @returns `true` if the user selected a certificate (so the connection should be
  * retried), `false` otherwise.
  */
-async function maybePromptForClientCertificate(error: unknown, url: string): Promise<boolean> {
+async function maybePromptForClientCertificate(
+	candidates: RecommendedServerInfo[],
+): Promise<boolean> {
 	const store = useClientCertificateStore.getState()
 
-	// Only for secure connections, only where the native module exists, and only when
-	// the user hasn't already chosen a certificate.
-	if (!url.startsWith(HTTPS)) return false
+	// Only where the native module exists, and only when the user hasn't already chosen
+	// a certificate.
 	if (!store.supported) return false
 	if (getClientCertificateAlias()) return false
-	if (!looksLikeClientCertificateError(error)) return false
+
+	const url = findClientCertificateFailure(candidates)
+	if (!url) return false
 
 	try {
 		const { host, port } = parseHostAndPort(url)
@@ -147,30 +148,4 @@ async function maybePromptForClientCertificate(error: unknown, url: string): Pro
 		)
 		return false
 	}
-}
-
-function connect(api: Api, connectionType: ConnectionType) {
-	return getSystemApi(api)
-		.getPublicSystemInfo()
-		.then((response) => {
-			if (!response.data.Version)
-				throw new Error(
-					`Jellyfin instance did not respond to our ${connectionType} request`,
-				)
-
-			return {
-				publicSystemInfoResponse: response.data,
-				connectionType,
-			}
-		})
-		.catch((error) => {
-			captureError(
-				error,
-				LoggingContext.PublicSystemInfo,
-				`Failed to connect to Jellyfin via ${connectionType}`,
-			)
-			// Rethrow the original error (rather than a generic one) so callers can
-			// inspect it — e.g. to detect a missing client certificate.
-			throw error
-		})
 }

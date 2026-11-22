@@ -1,17 +1,6 @@
-import { QueryKeys } from '../enums/query-keys'
 import { BaseItemDto, MediaSourceInfo } from '@jellyfin/sdk/lib/generated-client/models'
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Queue } from '../services/types/queue-item'
-import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
-import {
-	InfiniteData,
-	InfiniteQueryObserverResult,
-	UseInfiniteQueryResult,
-} from '@tanstack/react-query'
-import { RefObject } from 'react'
-import HomeStackParamList from './Home/types'
-import LibraryStackParamList from './Library/types'
-import DiscoverStackParamList from './Discover/types'
+import { UseInfiniteQueryResult } from '@tanstack/react-query'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import TabParamList from './Tabs/types'
 import { PlayerParamList } from './Player/types'
@@ -38,6 +27,7 @@ export type BaseStackParamList = {
 
 	Tracks: {
 		tracksInfiniteQuery: UseInfiniteQueryResult<(BaseItemDto | LibrarySectionListData)[], Error>
+		showAlphabeticalSelector?: boolean
 	}
 }
 
@@ -64,7 +54,6 @@ export type RootStackParamList = {
 		streamingMediaSourceInfo?: MediaSourceInfo
 		downloadedMediaSourceInfo?: MediaSourceInfo
 		navigation?: Pick<NativeStackNavigationProp<BaseStackParamList>, 'navigate' | 'dispatch'>
-		navigationCallback?: (screen: 'Album' | 'Artist', item: BaseItemDto) => void
 	}
 
 	AddToPlaylist: {
@@ -83,7 +72,9 @@ export type RootStackParamList = {
 		onDelete: () => void
 	}
 
-	MigrateDownloads: undefined
+	PrivacyPolicy: undefined
+
+	Ota: { pullRequest?: boolean } | undefined
 }
 
 export type LoginProps = NativeStackNavigationProp<RootStackParamList, 'Login'>
@@ -93,4 +84,5 @@ export type ContextProps = NativeStackScreenProps<RootStackParamList, 'Context'>
 export type AddToPlaylistProps = NativeStackScreenProps<RootStackParamList, 'AddToPlaylist'>
 export type AudioSpecsProps = NativeStackScreenProps<RootStackParamList, 'AudioSpecs'>
 
-export type MigrateDownloadsProps = NativeStackScreenProps<RootStackParamList, 'MigrateDownloads'>
+export type PrivacyPolicyProps = NativeStackScreenProps<RootStackParamList, 'PrivacyPolicy'>
+export type OtaProps = NativeStackScreenProps<RootStackParamList, 'Ota'>
