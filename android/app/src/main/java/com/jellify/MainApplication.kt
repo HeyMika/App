@@ -36,7 +36,12 @@ class MainApplication : Application(), ReactApplication {
           // add(MyReactNativePackage())
           add(ClientCertPackage())
         },
-        jsBundleFilePath = getStoredBundlePath(applicationContext)
+        // Only load a downloaded OTA bundle when OTA updates are enabled. This fork
+        // disables them, so any bundle fetched earlier from upstream's App-Bundles
+        // repo (which would replace this fork's JS) is ignored in favour of the
+        // bundle shipped in the APK.
+        jsBundleFilePath =
+          if (isOtaUpdateEnabled()) getStoredBundlePath(applicationContext) else null
     )
   }
 
@@ -54,6 +59,9 @@ class MainApplication : Application(), ReactApplication {
     startCrashReporting()
     loadReactNative(this)
   }
+
+  private fun isOtaUpdateEnabled(): Boolean =
+    NativeSuperConfig.config["OTA_UPDATE_ENABLED"] == "true"
 
   /**
    * Starts Sentry before React Native loads so startup crashes get reported.

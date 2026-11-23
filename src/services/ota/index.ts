@@ -1,4 +1,4 @@
-import { OTA_DOWNLOAD_URL, OTA_VERSION_URL } from '../../configs/ota.config'
+import { OTA_DOWNLOAD_URL, OTA_UPDATE_ENABLED, OTA_VERSION_URL } from '../../configs/ota.config'
 import { Alert } from 'react-native'
 import { OTAUpdateManager, reloadApp } from 'react-native-nitro-ota'
 import i18n from '../../i18n'
@@ -7,6 +7,8 @@ import navigationRef from '../../screens/navigation'
 const otaManager = new OTAUpdateManager(OTA_DOWNLOAD_URL, OTA_VERSION_URL)
 
 export const checkGitVersion = () => {
+	if (!OTA_UPDATE_ENABLED) return
+
 	// JS-side check: understands the JSON manifest on every native version and honours the blacklist
 	otaManager
 		.hasCompatibleUpdate()
@@ -21,6 +23,11 @@ export const checkGitVersion = () => {
 }
 
 export const downloadUpdate = (showCatchAlert: boolean = false) => {
+	if (!OTA_UPDATE_ENABLED) {
+		if (showCatchAlert) Alert.alert(i18n.t('ota.notAvailable'))
+		return
+	}
+
 	otaManager
 		.downloadUpdate()
 		.then(() => {
