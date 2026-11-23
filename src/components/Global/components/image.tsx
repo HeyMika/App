@@ -5,8 +5,7 @@ import { getBlurhashFromDto } from '../../../utils/parsing/blurhash'
 import { getItemImageUrl, ImageUrlOptions } from '../../../api/queries/image/utils'
 import Image from '../utils/image'
 import JellifyLogo from '../../Branding/logo'
-import { useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { useState, useEffect } from 'react'
 import { isEmpty } from 'lodash'
 
 interface ItemImageProps {
@@ -52,21 +51,23 @@ function ItemImage({
 
 	const displayImage = !isEmpty(imageUrl) && !failedToLoad
 
-	const styles = elevate
-		? StyleSheet.create({
-				shadow: {
-					boxShadow: [
-						{
-							offsetY: 2,
-							offsetX: 0,
-							blurRadius: 4,
-							spreadDistance: 1,
-							color: darkBackground75.val,
-						},
-					],
-				},
-			})
+	const shadowStyle = elevate
+		? {
+				boxShadow: [
+					{
+						offsetY: 2,
+						offsetX: 0,
+						blurRadius: 4,
+						spreadDistance: 1,
+						color: darkBackground75.val,
+					},
+				],
+			}
 		: undefined
+
+	useEffect(() => {
+		setFailedToLoad(false)
+	}, [item.Id])
 
 	return displayImage ? (
 		<Image
@@ -81,13 +82,12 @@ function ItemImage({
 				blurhash,
 			}}
 			alignSelf='center'
-			format={'apng'}
 			onFailure={onError}
-			style={styles?.shadow}
+			style={shadowStyle}
 		/>
 	) : (
 		<Square
-			backgroundColor={'$neutral'}
+			backgroundColor='neutral'
 			width={width}
 			height={height}
 			borderRadius={borderRadius}
@@ -106,7 +106,7 @@ function ItemImage({
  */
 function getBorderRadius(
 	circular: boolean | undefined,
-	width: Token | string | number | string,
+	width: Token | string | number | boolean,
 ): number {
 	let borderRadius
 
@@ -114,15 +114,15 @@ function getBorderRadius(
 		borderRadius =
 			typeof width === 'number'
 				? width
-				: typeof width === 'string' && width.endsWith('%')
-					? getTokenValue('$20') * 25
+				: typeof width === 'boolean' || (typeof width === 'string' && width.endsWith('%'))
+					? getTokenValue('20') * 25
 					: getTokenValue(width as Token) * 25
 	} else {
 		borderRadius =
 			typeof width === 'number'
 				? width / 25
-				: typeof width === 'string' && width.endsWith('%')
-					? getTokenValue('$4')
+				: typeof width === 'boolean' || (typeof width === 'string' && width.endsWith('%'))
+					? getTokenValue('2')
 					: Math.log(getTokenValue(width as Token))
 	}
 

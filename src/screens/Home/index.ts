@@ -1,48 +1,52 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { stackScreenOptions } from '../navigation'
 import { Home as HomeComponent } from '../../components/Home'
 import HomeArtistsScreen from './artists'
 import HomeTracksScreen from './tracks'
+import RecentPlaylistsScreen from './playlists'
 import HomeStackParamList from './types'
 import { BaseStackScreens } from '../base-stack'
+import i18n from '../../i18n'
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>({
 	initialRouteName: 'HomeScreen',
-	screenOptions: {
-		headerTitleAlign: 'center',
-		headerTitleStyle: {
-			fontFamily: 'Figtree-Bold',
-		},
-	},
+	screenOptions: stackScreenOptions,
 	screens: {
 		HomeScreen: {
 			screen: HomeComponent,
 			options: {
-				title: 'Home',
+				title: i18n.t('navigation.home'),
 			},
 		},
 		...BaseStackScreens,
 		RecentArtists: {
 			screen: HomeArtistsScreen,
 			options: {
-				title: 'Recent Artists',
+				title: i18n.t('home.recentArtists'),
 			},
 		},
 		MostPlayedArtists: {
 			screen: HomeArtistsScreen,
 			options: {
-				title: 'Most Played',
+				title: i18n.t('home.mostPlayed'),
 			},
 		},
 		RecentTracks: {
 			screen: HomeTracksScreen,
 			options: {
-				title: 'Recently Played',
+				title: i18n.t('home.recentlyPlayed'),
 			},
 		},
 		MostPlayedTracks: {
 			screen: HomeTracksScreen,
 			options: {
-				title: 'On Repeat',
+				title: i18n.t('home.onRepeat'),
+			},
+		},
+		RecentPlaylists: {
+			screen: RecentPlaylistsScreen,
+			options: {
+				title: i18n.t('home.yourPlaylists'),
 			},
 		},
 	},
